@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Explosion : MonoBehaviour
+public class ObistcleExplode : MonoBehaviour
 {
-    public Material alive;
-    public Material alive2;
+    public Material obsticaleMat;
     public float cubeSize = 0.2f;
     public int cubesInRow = 5;
     public int x = 0;
@@ -13,6 +12,7 @@ public class Explosion : MonoBehaviour
     public float blastRadius = 5;
     Vector3 cubesPivot;
     public float force = 200;
+    public BulletController bullet;
 
     // Start is called before the first frame update
     void Start()
@@ -29,16 +29,13 @@ public class Explosion : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (transform.position.y < 1.2)
-        {
-            Explode(8);
-        }
+
     }
     private void OnCollisionEnter(Collision collisionInfo)
     {
-        if (collisionInfo.collider.tag == "Obstacle")
+        if (collisionInfo.collider.tag == "Bullet")
         {
-            Explode(5);
+            Explode(3);
         }
     }
     public void Explode(int cubesInRow)
@@ -46,10 +43,16 @@ public class Explosion : MonoBehaviour
         gameObject.SetActive(false);
 
 
-        for (int x = 0; x < cubesInRow; x++) {
-            for (int y = 0; y < cubesInRow; y++) {
-                for (int z = 0; z < cubesInRow; z++) {
-                    BrokenPiece(x, y, z); } } }
+        for (int x = 0; x < cubesInRow; x++)
+        {
+            for (int y = 0; y < cubesInRow; y++)
+            {
+                for (int z = 0; z < cubesInRow; z++)
+                {
+                    BrokenPiece(x, y, z);
+                }
+            }
+        }
 
         Collider[] colliders = Physics.OverlapSphere(transform.position, blastRadius); //<-This will get an array of all colliders that are detected within the sphere. The sphere is made at  the object pos. (one of the cube s I think), then it checks within a distance of 5 for objects.
         foreach (Collider detectedCube in colliders)
@@ -57,14 +60,15 @@ public class Explosion : MonoBehaviour
             Rigidbody rb = detectedCube.GetComponent<Rigidbody>(); //Now that is getting rigidbody component from each of the objects
             if (rb != null)                                         //Must make sure to check it has rigidbody because not all nearby objects will....
             {
-                rb.AddExplosionForce(Random.Range(100, 300), transform.position, blastRadius);
+                rb.AddExplosionForce(Random.Range(0, 20000), transform.position, blastRadius);
+                    
             }
 
 
 
         } //Now we have an array called collliders
     }
-    
+
 
     //Now we must make afuctnion that creates a new piece when we disbale old one!!!!
 
@@ -76,7 +80,7 @@ public class Explosion : MonoBehaviour
 
         //Now we need to set the position and the scale for t he newly broken obkect so
         broken.transform.position = transform.position + new Vector3(cubeSize * x, cubeSize * y, cubeSize * z) - cubesPivot;
-            broken.transform.localScale = new Vector3(cubeSize, cubeSize, cubeSize);
+        broken.transform.localScale = new Vector3(cubeSize, cubeSize, cubeSize);
         //now we need to add a rigid body and some mass to this shit ok so for the position adn scal eapperntly yo can just typ ethe gameobject.transform.scale and .pos but it appears
         // that since rigidbody isnt a default comonent then you must add it manually first using broken.AddComponent<Rigidbody>(); then to modify a certain shit in it, since its an added
         // component you still must go broken.AsddComponent<Rigidbody>().mass = 0.2f, its appear white thats kinda annoying lets fix that
@@ -84,10 +88,9 @@ public class Explosion : MonoBehaviour
         broken.GetComponent<Rigidbody>().mass = cubeSize;
 
         //add the material color
-        broken.GetComponent<Renderer>().material = alive;
+        broken.GetComponent<Renderer>().material = obsticaleMat;
         //We only mad e a small one. But we nee d a5 x 5 so we must make a loop for spasing in
-        broken.GetComponent<Rigidbody>().drag = 1;
-
+        Destroy(broken, Random.Range(0.1f, 0.5f));
 
 
 
